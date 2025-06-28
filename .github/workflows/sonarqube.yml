@@ -1,0 +1,32 @@
+# .github/workflows/sonarqube.yml
+name: SonarQube Scan
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  sonar:
+    name: SonarQube Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build and analyze
+        run: mvn clean verify sonar:sonar -Dsonar.projectKey=AppSpringboot -Dsonar.host.url=http://192.168.1.76:9000 -Dsonar.token=${{ secrets.SONAR_TOKEN }}
